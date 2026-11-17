@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>KHU QUEST — 慶熙大学への、はじめの一歩。</title>
+  <meta name="khu-build" content="2026-11-17g">
+  <meta name="description" content="慶熙大学（경희대학교）の魅力と留学準備を、子ライオンと一緒に体験するブラウザRPG。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="shell">
+  <header class="head">
+    <b class="brand">🍡 3色だんご presents</b>
+    <span id="progress" class="progress">KHU TO MY COUNTRY</span>
+    <div class="headbtns">
+      <button class="iconbtn" id="notebtn" title="攻略ノート"><i class="nbicon"></i> <span id="notecount">0</span>/<span id="notetotal">0</span></button>
+      <button class="iconbtn" id="mutebtn" title="サウンド">🔊</button>
+    </div>
+  </header>
+
+  <div class="game" id="game">
+    <!-- ===== タイトル ===== -->
+    <section class="scene active" id="start">
+      <div class="titlebg" id="titlebg"></div>
+      <div class="shade"></div>
+      <div class="titlecontent">
+        <div class="eyebrow">WELCOME TO KYUNG HEE UNIVERSITY</div>
+        <h1 class="logo"><span>KHU</span><span>QUEST</span></h1>
+        <div class="subtitle">慶熙大学への、はじめの一歩。</div>
+        <div class="buttons">
+          <button class="btn glow" id="startbtn">▶ GAME START</button>
+          <button class="btn secondary" id="notetitlebtn"><i class="nbicon"></i> 攻略ノート</button>
+          <button class="btn ghost" id="howbtn">遊び方</button>
+        </div>
+        <div class="titlemeta" id="titlemeta"></div>
+      </div>
+      <div class="presskey">PRESS ENTER</div>
+    </section>
+
+    <!-- ===== 物語 ===== -->
+    <section class="scene" id="story">
+      <div class="storybg" id="storybg"></div>
+      <div class="storyveil"></div>
+      <div class="storytop">
+        <span class="chip" id="chaptertag"></span>
+        <div class="chapterbar" id="chapterbar"></div>
+      </div>
+      <div class="storypanel">
+        <div class="character" id="portrait">
+          <img id="portraitimg" src="assets/baby-lion.png" alt="" onerror="this.classList.add('missing')">
+          <span class="fallback">🦁</span>
+        </div>
+        <div class="storycontent" id="storybox">
+          <div class="speaker" id="speaker"></div>
+          <div class="line" id="storyline"></div>
+          <div class="choices" id="choices"></div>
+          <div class="advance" id="storynext">▼</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== キャンパス探索 ===== -->
+    <section class="scene" id="campus">
+      <div class="world" id="world">
+      <div class="map" id="map"></div>
+      <div id="spots"></div>
+      <div class="sprite" id="guide"><span class="name">先輩ライオン</span>
+        <img class="lion-image" src="assets/guide-lion.png" alt="先輩ライオン" onerror="this.classList.add('missing')"><span class="fallback">🦁</span></div>
+      <div class="sprite player" id="baby"><span class="name you">あなた</span>
+        <img class="lion-image" src="assets/baby-lion.png" alt="子ライオン" onerror="this.classList.add('missing')"><span class="fallback">🦁</span></div>
+      <div class="hint" id="hint">E で話しかける</div>
+      </div>
+      <div class="campusart" id="campusart" aria-hidden="true"></div>
+      <div class="campuscaption" id="campuscaption" aria-hidden="true"></div>
+      <img class="campusportrait" id="campusportrait" alt="" aria-hidden="true">
+      <div class="hud">
+        <div class="hudcard">
+          <b id="campustitle">🏫 慶熙大学 ソウルキャンパス</b>
+          <small id="mission">MISSION · 先輩ライオンに話しかけよう</small>
+        </div>
+        <div class="hudcard right">
+          <b>🔍 調査 <span id="spotcount">0</span>/<span id="spottotal">0</span></b>
+          <small>移動：矢印 / WASD　調べる：E</small>
+        </div>
+      </div>
+      <button class="btn nextarea" id="leavebtn">次へ進む ▶</button>
+      <div class="dialog" id="dialog">
+        <div class="speaker" id="dialogwho">🦁 先輩ライオン</div>
+        <div class="line" id="dialogline"></div>
+        <div class="advance">▼</div>
+      </div>
+      <div class="deptpop" id="deptpop" hidden>
+        <div class="deptchar" id="deptchar" hidden>
+          <div class="deptnametag"><b id="deptwho"></b><small id="deptwhonote"></small></div>
+          <img class="deptavatar" id="deptavatar" alt="">
+        </div>
+        <article class="deptcard" id="deptcard">
+          <button class="deptclose" id="deptclose" aria-label="閉じる">✕</button>
+          <div class="depttag">DEPARTMENT</div>
+          <h3 id="depttitle"></h3>
+          <div id="deptbody"></div>
+          <button class="btn glow deptok" id="deptok">OK ▶</button>
+        </article>
+      </div>
+      <div class="touch" id="touch">
+        <button class="up" data-dir="ArrowUp">▲</button>
+        <button data-dir="ArrowLeft">◀</button>
+        <button data-dir="ArrowDown">▼</button>
+        <button data-dir="ArrowRight">▶</button>
+      </div>
+      <button class="talkbtn" id="talk">E<br><small>調べる</small></button>
+    </section>
+
+    <!-- ===== クイズ ===== -->
+    <section class="scene" id="quiz">
+      <div class="quizwrap">
+        <div class="quizcard">
+          <div class="qtag" id="qtag"></div>
+          <div class="question" id="question"></div>
+          <div class="answers" id="answers"></div>
+          <div class="feedback" id="feedback"></div>
+          <button class="btn" id="quiznext" hidden>つぎへ ▶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== チャプタークリア ===== -->
+    <section class="scene" id="clear">
+      <div class="clearwrap">
+        <div class="clearcard">
+          <div class="trophy">🏆</div>
+          <div class="cl-tag" id="cltag">CHAPTER 01 CLEAR!</div>
+          <h2 id="clhead"></h2>
+          <p class="cl-msg" id="clmsg"></p>
+          <div class="cl-get"><span class="hl"><i class="nbicon"></i> 新しい攻略ノートを獲得！</span><small id="clcount"></small></div>
+          <div class="cl-notes" id="clnotes"></div>
+          <p class="cl-miss" id="clmiss"></p>
+          <div class="cl-btns">
+            <button class="btn ghost" id="clreplay">↻ この章をもう一度</button>
+            <button class="btn glow" id="clnext">次の章へ →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STORY CLEAR（エンディング） ===== -->
+    <section class="scene" id="end">
+      <div class="endwrap" id="endwrap">
+        <img class="endlion" id="endlion" alt="" hidden>
+        <div class="endcard">
+          <div class="stamp">合格</div>
+          <div class="trophy big">🏆</div>
+          <div class="cl-tag" id="storytag">STORY 01 CLEAR!</div>
+          <h2 id="storyhead"></h2>
+          <p id="storymsg"></p>
+          <div class="results">
+            <div><b id="score">0/0</b><small>ミニクイズ</small></div>
+            <div><b id="endnotes">0/0</b><small>攻略ノート</small></div>
+            <div><b id="rank">-</b><small>ランク</small></div>
+          </div>
+          <div class="nextstory" id="nextstory"></div>
+          <div class="buttons center">
+            <button class="btn glow" id="endnotebtn"><i class="nbicon"></i> 攻略ノートを見る</button>
+            <a class="btn secondary" href="notebook.html" target="_blank" rel="noopener">ダッシュボードで開く ↗</a>
+            <button class="btn ghost" id="restart">最初から ↻</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 演出レイヤー ===== -->
+    <canvas id="fx"></canvas>
+    <div class="chaptercard" id="chaptercard">
+      <div class="cc-num" id="ccnum"></div>
+      <div class="cc-en" id="ccen"></div>
+      <div class="cc-title" id="cctitle"></div>
+    </div>
+    <div class="flash" id="flash"></div>
+    <div class="dreamfx" id="dreamfx" aria-hidden="true"><span class="dd">……</span></div>
+    <div class="wipe" id="wipe"></div>
+    <div class="toasts" id="toasts"></div>
+
+    <!-- ===== 攻略ノート（ゲーム内） ===== -->
+    <div class="modal" id="notebook" hidden>
+      <div class="nb">
+        <div class="nbhead">
+          <div>
+            <div class="eyebrow dark">KHU QUEST GUIDEBOOK</div>
+            <h2><i class="nbicon"></i> 攻略ノート</h2>
+          </div>
+          <div class="nbprog"><b id="nbpct">0%</b><div class="bar"><i id="nbbar"></i></div></div>
+          <button class="close" data-close>✕</button>
+        </div>
+        <div class="tabs" id="nbtabs"></div>
+        <div class="grid" id="nbgrid"></div>
+        <div class="nbfoot"><a href="notebook.html" target="_blank" rel="noopener">ダッシュボードで大きく見る ↗</a></div>
+      </div>
+    </div>
+    <div class="modal" id="notedetail" hidden><div class="ndcard" id="ndcard"></div></div>
+
+    <div class="modal" id="howto" hidden>
+      <div class="ndcard howto">
+        <button class="close" data-close>✕</button>
+        <h2>遊び方</h2>
+        <ul>
+          <li><b>物語</b>：クリック / Enter / スペースで進む。文字の表示中に押すと全文表示。</li>
+          <li><b>キャンパス</b>：矢印キー / WASD で移動、<kbd>E</kbd> で話す・調べる。✦ が光る場所を調べよう。</li>
+          <li><b>攻略ノート</b>：章のクリア、クイズ、正しい選択、調査で手に入る。全 <span id="howtotal"></span> 枚を集めよう！</li>
+          <li><b>スマホ</b>：画面のボタンで操作できます。</li>
+        </ul>
+        <p class="note">※入学・奨学金・日程などの制度は、出願年度の公式募集要項で必ず確認してください。</p>
+      </div>
+    </div>
+  </div>
+  <p class="foot">※制度・日程は出願年度の公式募集要項を確認してください。 © 3色だんご 🍡 — 2026 KHU GLOBAL CHALLENGE</p>
+</main>
+<script src="notes.js"></script>
+<script src="story.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

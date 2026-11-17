@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>KHU QUEST 攻略ノート</title>
+  <meta name="description" content="KHU QUESTで集めた、慶熙大学への留学攻略ノートのダッシュボード。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="notebook.css">
+  <link rel="icon" href="data:,">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="index.html"><span>KHU QUEST</span><small>GUIDEBOOK DASHBOARD</small></a>
+    <a class="play" href="index.html">▶ ゲームで集める</a>
+  </header>
+
+  <section class="hero">
+    <div class="ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle cx="60" cy="60" r="52" class="track"/>
+        <circle cx="60" cy="60" r="52" class="fill" id="ringfill"/>
+      </svg>
+      <div class="ringtext"><b id="pct">0%</b><small id="pctsub">0 / 0</small></div>
+    </div>
+    <div class="herotext">
+      <div class="eyebrow">MY STUDY-ABROAD NOTEBOOK</div>
+      <h1 id="title">攻略ノート</h1>
+      <p id="msg">ゲームを進めると、慶熙大学への留学に役立つノートが集まります。</p>
+      <div class="stats">
+        <div><b id="sclears">0</b><small>クリア回数</small></div>
+        <div><b id="sbest">-</b><small>クイズ最高</small></div>
+        <div><b id="sssr">0</b><small>SSR入手</small></div>
+        <div><b id="splays">0</b><small>プレイ回数</small></div>
+      </div>
+    </div>
+    <div class="herobook" aria-hidden="true"></div>
+  </section>
+
+  <section class="cats" id="cats"></section>
+
+  <section class="toolbar">
+    <div class="tabs" id="tabs"></div>
+    <input id="search" type="search" placeholder="キーワードで探す（例：奨学金）">
+  </section>
+
+  <section class="grid" id="grid"></section>
+  <section class="printonly" id="printall"></section>
+
+  <footer class="foot">
+    <p>※入学・奨学金・ビザなどの制度は年度によって変わります。出願前に必ず公式の募集要項を確認してください。</p>
+    <p>
+      <button class="link" id="printbtn">🖨 ノートを印刷 / PDF保存</button>
+      <button class="link danger" id="resetbtn">記録をリセット</button>
+    </p>
+    <p class="copy">© 3色だんご 🍡 — 2026 KHU GLOBAL CHALLENGE</p>
+  </footer>
+</div>
+
+<div class="modal" id="modal" hidden><article class="detail" id="detail"></article></div>
+
+<script src="notes.js"></script>
+<script>
+/* 攻略ノートのアイコン（assets/new-university-notebook）。余白を切り詰めて、右上の飾りとタブのアイコンに使う */
+(() => {
+  const tries = ['assets/new-university-notebook.webp', 'assets/new-university-notebook.png'];
+  (function next(i) {
+    if (i >= tries.length) return;
+    const im = new Image();
+    im.onerror = () => next(i + 1);
+    im.onload = () => {
+      let src = tries[i];
+      try {
+        const L = 320, k = L / Math.max(im.naturalWidth, im.naturalHeight), W = Math.round(im.naturalWidth * k), H = Math.round(im.naturalHeight * k);
+        const c = document.createElement('canvas'); c.width = W; c.height = H;
+        const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(im, 0, 0, W, H);
+        const d = x.getImageData(0, 0, W, H).data; let x0 = W, y0 = H, x1 = -1, y1 = -1;
+        for (let yy = 0; yy < H; yy++) for (let xx = 0; xx < W; xx++) if (d[(yy * W + xx) * 4 + 3] > 10) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; }
+        if (x1 > x0 && y1 > y0) { const bw = x1 - x0 + 1, bh = y1 - y0 + 1, s = 256 / Math.max(bw, bh); const o = document.createElement('canvas'); o.width = Math.round(bw * s); o.height = Math.round(bh * s); o.getContext('2d').drawImage(c, x0, y0, bw, bh, 0, 0, o.width, o.height); src = o.toDataURL('image/png'); }
+      } catch (e) { /* file:// で開いたときなど：切り詰めずに使う */ }
+      document.documentElement.style.setProperty('--nbicon', `url("${src}")`);
+      document.body.classList.add('nbimg');
+      document.querySelector('link[rel="icon"]').href = src;
+    };
+    im.src = tries[i];
+  })(0);
+})();
+</script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const NOTES = KHU_NOTES, CATS = KHU_CATS, S = KHUStore;
+  const cat = id => CATS.find(c => c.id === id);
+  let filter = 'all', q = '';
+
+  function render() {
+    S.load();
+    const d = S.data, got = S.count(), total = NOTES.length, pct = Math.round(got / total * 100);
+    const C = 2 * Math.PI * 52;
+    $('ringfill').style.strokeDasharray = C;
+    $('ringfill').style.strokeDashoffset = C * (1 - got / total);
+    $('pct').textContent = pct + '%';
+    $('pctsub').textContent = `${got} / ${total}`;
+    $('sclears').textContent = d.clears;
+    $('sbest').textContent = d.bestScore == null ? '-' : `${d.bestScore}/${d.quizMax}`;
+    $('sssr').textContent = NOTES.filter(n => n.rarity === 'SSR' && S.has(n.id)).length;
+    $('splays').textContent = d.plays;
+    $('title').textContent = got === total ? '🏆 攻略ノート コンプリート！' : '攻略ノート';
+    $('msg').textContent = got === 0 ? 'まだノートがありません。ゲームを始めて、最初のノートを手に入れよう！'
+      : got === total ? 'すべてのノートを集めました。これであなたも慶熙大学マスター！'
+      : `あと ${total - got} 枚。ロックされたカードの「入手方法」をヒントに探してみよう。`;
+
+    $('cats').innerHTML = CATS.map(c => {
+      const all = NOTES.filter(n => n.cat === c.id), g = all.filter(n => S.has(n.id)).length;
+      return `<div class="cat" style="--c:${c.color}"><span>${c.icon}</span><div><b>${c.label}</b><div class="bar"><i style="width:${g / all.length * 100}%"></i></div></div><em>${g}/${all.length}</em></div>`;
+    }).join('');
+
+    $('tabs').innerHTML = '';
+    [{ id: 'all', label: 'すべて', icon: '✦' }, ...CATS, { id: 'locked', label: '未入手', icon: '🔒' }].forEach(c => {
+      const b = document.createElement('button');
+      b.className = 'tab' + (filter === c.id ? ' on' : '');
+      b.textContent = `${c.icon} ${c.label}`;
+      b.onclick = () => { filter = c.id; render(); };
+      $('tabs').append(b);
+    });
+
+    const list = NOTES.filter(n =>
+      (filter === 'all' || n.cat === filter || (filter === 'locked' && !S.has(n.id))) &&
+      (!q || (S.has(n.id) && (n.title + n.lead + n.body.join('') + n.tip).includes(q))));
+    $('grid').innerHTML = '';
+    if (!list.length) $('grid').innerHTML = '<p class="empty">該当するノートがありません。</p>';
+    list.forEach((n, i) => {
+      const c = cat(n.cat), has = S.has(n.id);
+      const el = document.createElement('button');
+      el.className = `card r-${n.rarity}` + (has ? '' : ' locked');
+      el.style.setProperty('--c', c.color);
+      el.style.animationDelay = i * 0.03 + 's';
+      el.innerHTML = has
+        ? `<div class="ctop"><span class="cicon">${c.icon}</span><span class="rar">${n.rarity}</span></div>
+           <b>${n.title}</b><p>${n.lead}</p>
+           <div class="cfoot"><span>${c.label}</span>${n.check ? '<span class="warn">要確認</span>' : ''}<time>${new Date(S.data.notes[n.id]).toLocaleDateString('ja-JP')}</time></div>`
+        : `<div class="ctop"><span class="cicon">🔒</span><span class="rar">${n.rarity}</span></div>
+           <b>？？？</b><p>入手方法：${n.how}</p><div class="cfoot"><span>${c.label}</span></div>`;
+      if (has) el.onclick = () => open(n); else el.disabled = true;
+      $('grid').append(el);
+    });
+  }
+
+  function renderPrint() {
+    $('printall').innerHTML = NOTES.filter(n => S.has(n.id)).map(n => `
+      <div class="pnote" style="--c:${cat(n.cat).color}"><h3>${cat(n.cat).icon} ${n.title}</h3><b>${n.lead}</b>
+      <ul>${n.body.map(b => `<li>${b}</li>`).join('')}</ul><div>💡 ${n.tip}</div>${n.check ? '<small>※最新の公式募集要項で要確認</small>' : ''}</div>`).join('');
+  }
+
+  function open(n) {
+    const c = cat(n.cat);
+    $('detail').style.setProperty('--c', c.color);
+    $('detail').innerHTML = `
+      <button class="close" data-close>✕</button>
+      <div class="dtop"><span class="chip">${c.icon} ${c.label}</span><span class="rar">${n.rarity}</span></div>
+      <h2>${n.title}</h2><p class="lead">${n.lead}</p>
+      <ul>${n.body.map(b => `<li>${b}</li>`).join('')}</ul>
+      <div class="tip">💡 ${n.tip}</div>
+      ${n.check ? '<div class="check">⚠ 制度・条件は年度で変わります。最新の公式募集要項で確認してください。</div>' : ''}
+      ${n.link ? `<p><a class="cl-link" href="${n.link.url}" target="_blank" rel="noopener">🔗 ${n.link.label}</a></p>` : ''}
+      <p class="how">入手：${n.how}</p>`;
+    $('modal').hidden = false;
+  }
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-close]') || e.target.id === 'modal') $('modal').hidden = true;
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') $('modal').hidden = true; });
+  $('search').oninput = e => { q = e.target.value.trim(); render(); };
+  $('printbtn').onclick = () => { renderPrint(); window.print(); };
+  let armed = false;
+  $('resetbtn').onclick = () => {
+    if (!armed) { armed = true; $('resetbtn').textContent = 'もう一度押すとリセットします'; setTimeout(() => { armed = false; $('resetbtn').textContent = '記録をリセット'; }, 3000); return; }
+    S.reset(); armed = false; $('resetbtn').textContent = '記録をリセット'; render();
+  };
+  // ゲームを別タブで遊んでいる間も自動で更新
+  window.addEventListener('storage', render);
+  window.addEventListener('focus', render);
+  render();
+})();
+</script>
+</body>
+</html>
